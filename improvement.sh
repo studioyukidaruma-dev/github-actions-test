@@ -28,10 +28,23 @@ gh run watch $RUN_ID --exit-status
 # 3. 失敗していた場合のみ、JSONレポートをダウンロードしてAIへ
 if [ $? -ne 0 ]; then
     echo "❌ テスト失敗。レポートをダウンロード中..."
-    gh run download $RUN_ID --name playwright-report --dir ./ --clobber # --clobberで上書き許可
     
-    # 【修正】「python」から「python3」に変更
-    python3 your_harness.py --fix test-result.json
+    # 【修正】衝突を防ぐため、ローカルにある古いファイルやフォルダをあらかじめ削除
+    rm -f test-result.json
+    rm -rf playwright-report
+    
+    # 【修正】--clobber フラグを削除してダウンロード
+    gh run download $RUN_ID --name playwright-report --dir ./
+    
+    # 【親切設計】フォルダの中にダウンロードされたJSONを、ルート直下に移動させる
+    if [ -f "playwright-report/test-result.json" ]; then
+        mv playwright-report/test-result.json ./
+        rm -rf playwright-report
+    fi
+    
+    # 正しく中身の詰まった test-result.json をPythonに渡す
+    echo "🤖 AIハーネスを実行します..."
+    # python3 your_harness.py --fix test-result.json
 else
     echo "✅ テスト成功！"
 fi
