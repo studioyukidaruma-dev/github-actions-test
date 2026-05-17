@@ -29,22 +29,19 @@ gh run watch $RUN_ID --exit-status
 if [ $? -ne 0 ]; then
     echo "❌ テスト失敗。レポートをダウンロード中..."
     
-    # 【修正】衝突を防ぐため、ローカルにある古いファイルやフォルダをあらかじめ削除
+    # ローカルにある古い古いファイルを確実に削除
     rm -f test-result.json
-    rm -rf playwright-report
     
-    # 【修正】--clobber フラグを削除してダウンロード
+    # ダウンロードを実行（カレントディレクトリに直接 test-result.json が降ってきます）
     gh run download $RUN_ID --name playwright-report --dir ./
     
-    # 【親切設計】フォルダの中にダウンロードされたJSONを、ルート直下に移動させる
-    if [ -f "playwright-report/test-result.json" ]; then
-        mv playwright-report/test-result.json ./
-        rm -rf playwright-report
+    # ファイルが本当に存在し、中身があるか（空でないか）チェック
+    if [ -s "test-result.json" ]; then
+        echo "🤖 正しいテスト結果を検出しました。AIハーネスを実行します..."
+        # python3 your_harness.py --fix test-result.json
+    else
+        echo "⚠️ test-result.json はダウンロードされましたが、まだ空です。Actions側のログを確認してください。"
     fi
-    
-    # 正しく中身の詰まった test-result.json をPythonに渡す
-    echo "🤖 AIハーネスを実行します..."
-    # python3 your_harness.py --fix test-result.json
 else
     echo "✅ テスト成功！"
 fi

@@ -20,12 +20,12 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run Playwright tests
-      # 【修正】シンプルなコマンドに戻しました。失敗しても自動で次のステップに進みます。
-      run: npx playwright test --reporter=json > test-result.json
+      # 【修正】 config側で自動出力されるようになったので、> などのリダイレクトを削除
+      run: npx playwright test
 
     - name: Upload Test Result
       uses: actions/upload-artifact@v4
-      if: always() # テストが成功しても失敗しても、必ずJSONをアップロードする
+      if: always() 
       with:
         name: playwright-report
         path: test-result.json

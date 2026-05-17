@@ -6,10 +6,16 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html', # ローカル実行時のレポート。Actions上ではJSONで出力します。
+
+  // ==========================================
+  // 【修正】HTMLレポートとJSONレポートの両方を出力するように設定
+  // ==========================================
+  reporter: [
+    ['html'],
+    ['json', { outputFile: 'test-result.json' }] // 常にこのファイル名でJSONを書き出す
+  ],
   
   use: {
-    // テスト対象のURL。ローカルサーバーのURLを指定。
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
   },
@@ -21,9 +27,8 @@ export default defineConfig({
     },
   ],
 
-  // テスト実行前にローカルサーバーを起動する設定
   webServer: {
-    command: 'npm run serve', # package.jsonのscriptsにある"serve"コマンドを実行
+    command: 'npm run serve',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
